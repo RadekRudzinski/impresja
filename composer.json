@@ -1,0 +1,10 @@
+{
+    "name": "impresja/impresja",
+    "authors": [
+        {
+            "name": "Radek Rudzinski",
+            "email": "biuro@brodex.pl"
+        }
+    ],
+    "require": {}
+}
