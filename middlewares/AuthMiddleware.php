@@ -1,9 +1,9 @@
 <?php
 
-namespace impresja\core\middlewares;
+namespace impresja\impresja\middlewares;
 
-use impresja\core\Application;
-use impresja\core\exception\ForbiddenException;
+use impresja\impresja\Application;
+use impresja\impresja\exception\ForbiddenException;
 
 class AuthMiddleware extends BaseMiddleware
 {

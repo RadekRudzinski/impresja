@@ -1,5 +1,6 @@
 <?php
-namespace impresja\core;
+
+namespace impresja\impresja;
 
 class Response
 {
@@ -10,6 +11,6 @@ class Response
 
     public function redirect(string $url)
     {
-        header('Location: '.$url);
+        header('Location: ' . $url);
     }
 }

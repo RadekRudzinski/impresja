@@ -1,6 +1,6 @@
 <?php
 
-namespace impresja\core\middlewares;
+namespace impresja\impresja\middlewares;
 
 abstract class BaseMiddleware
 {

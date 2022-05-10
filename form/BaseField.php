@@ -1,8 +1,8 @@
 <?php
 
-namespace impresja\core\form;
+namespace impresja\impresja\form;
 
-use impresja\core\Model;
+use impresja\impresja\Model;
 
 abstract class BaseField
 {

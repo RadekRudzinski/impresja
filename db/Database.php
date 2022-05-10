@@ -1,8 +1,8 @@
 <?php
 
-namespace impresja\core\db;
+namespace impresja\impresja\db;
 
-use impresja\core\Application;
+use impresja\impresja\Application;
 
 class Database
 {

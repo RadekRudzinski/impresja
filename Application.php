@@ -1,9 +1,9 @@
 <?php
 
-namespace impresja\core;
+namespace impresja\impresja;
 
-use impresja\core\db\Database;
-use impresja\core\db\DbModel;
+use impresja\impresja\db\Database;
+use impresja\impresja\db\DbModel;
 
 class Application
 {
@@ -51,12 +51,12 @@ class Application
         }
     }
 
-    public function setController(\impresja\core\Controller $controller): void
+    public function setController(\impresja\impresja\Controller $controller): void
     {
         $this->controller = $controller;
     }
 
-    public function getController(): \impresja\core\Controller
+    public function getController(): \impresja\impresja\Controller
     {
         return $this->controller;
     }

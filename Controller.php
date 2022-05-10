@@ -1,8 +1,8 @@
 <?php
 
-namespace impresja\core;
+namespace impresja\impresja;
 
-use impresja\core\middlewares\BaseMiddleware;
+use impresja\impresja\middlewares\BaseMiddleware;
 
 class Controller
 {

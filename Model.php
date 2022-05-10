@@ -1,5 +1,6 @@
 <?php
-namespace impresja\core;
+
+namespace impresja\impresja;
 
 abstract class Model
 {
@@ -10,7 +11,7 @@ abstract class Model
     public const RULE_MATCH = 'match';
     public const RULE_UNIQUE = 'unique';
 
-    public array $errors =[];
+    public array $errors = [];
 
     public function loadData($data)
     {
@@ -21,7 +22,7 @@ abstract class Model
         }
     }
 
-    abstract public function rules() : array;
+    abstract public function rules(): array;
 
     public function validate()
     {
@@ -32,31 +33,31 @@ abstract class Model
                 if (!is_string($ruleName)) {
                     $ruleName = $rule[0];
                 }
-                if ($ruleName===self::RULE_REQUIRED && !$value) {
+                if ($ruleName === self::RULE_REQUIRED && !$value) {
                     $this->addErrorForRule($attribute, self::RULE_REQUIRED);
                 }
-                if ($ruleName===self::RULE_EMAIL && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                if ($ruleName === self::RULE_EMAIL && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
                     $this->addErrorForRule($attribute, self::RULE_EMAIL);
                 }
-                if ($ruleName===self::RULE_MIN && strlen($value) < $rule['min']) {
+                if ($ruleName === self::RULE_MIN && strlen($value) < $rule['min']) {
                     $this->addErrorForRule($attribute, self::RULE_MIN, $rule);
                 }
-                if ($ruleName===self::RULE_MAX && strlen($value) > $rule['max']) {
+                if ($ruleName === self::RULE_MAX && strlen($value) > $rule['max']) {
                     $this->addErrorForRule($attribute, self::RULE_MAX, $rule);
                 }
-                if ($ruleName===self::RULE_MATCH && $value !== $this->{$rule['match']}) {
-                    $this->addErrorForRule($attribute, self::RULE_MATCH, ['match'=>$this->getLabel($rule['match'])]);
+                if ($ruleName === self::RULE_MATCH && $value !== $this->{$rule['match']}) {
+                    $this->addErrorForRule($attribute, self::RULE_MATCH, ['match' => $this->getLabel($rule['match'])]);
                 }
-                if ($ruleName===self::RULE_UNIQUE) {
+                if ($ruleName === self::RULE_UNIQUE) {
                     $className = $rule['class'];
                     $uniqueAttr = $rule['attribute'] ?? $attribute;
-                    $tableName= $className::tableName();
+                    $tableName = $className::tableName();
                     $statement = Application::$app->db->prepare("SELECT * FROM $tableName WHERE $uniqueAttr = :attr");
                     $statement->bindValue(":attr", $value);
                     $statement->execute();
                     $record = $statement->fetchObject();
                     if ($record) {
-                        $this->addErrorForRule($attribute, self::RULE_UNIQUE, ['field'=>$this->getLabel($attribute)]);
+                        $this->addErrorForRule($attribute, self::RULE_UNIQUE, ['field' => $this->getLabel($attribute)]);
                     }
                 }
             }
@@ -64,10 +65,10 @@ abstract class Model
         return empty($this->errors);
     }
 
-    private function addErrorForRule(string $attribute, string $rule, $params=[])
+    private function addErrorForRule(string $attribute, string $rule, $params = [])
     {
         $message = $this->errorMesseges()[$rule] ?? '';
-        
+
         foreach ($params as $key => $value) {
             $message = str_replace("{{$key}}", $value, $message);
         }
@@ -81,7 +82,7 @@ abstract class Model
 
     public function errorMesseges()
     {
-        return[
+        return [
             self::RULE_REQUIRED => 'To pole jest wymagane',
             self::RULE_EMAIL => 'Wprowadź prawidłowy adres email',
             self::RULE_MIN => 'Minimalna długość to {min} znaków',

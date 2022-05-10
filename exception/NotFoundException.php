@@ -1,6 +1,6 @@
 <?php
 
-namespace impresja\core\exception;
+namespace impresja\impresja\exception;
 
 class NotFoundException extends \Exception
 {

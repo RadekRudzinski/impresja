@@ -1,8 +1,8 @@
 <?php
 
-namespace impresja\core;
+namespace impresja\impresja;
 
-use impresja\core\db\DbModel;
+use impresja\impresja\db\DbModel;
 
 abstract class UserModel extends DbModel
 {

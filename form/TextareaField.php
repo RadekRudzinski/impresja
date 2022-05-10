@@ -1,6 +1,6 @@
 <?php
 
-namespace impresja\core\form;
+namespace impresja\impresja\form;
 
 class TextareaField extends BaseField
 {

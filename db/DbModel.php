@@ -1,9 +1,9 @@
 <?php
 
-namespace impresja\core\db;
+namespace impresja\impresja\db;
 
-use impresja\core\Application;
-use impresja\core\Model;
+use impresja\impresja\Application;
+use impresja\impresja\Model;
 
 abstract class DbModel extends Model
 {
