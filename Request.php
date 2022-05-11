@@ -5,14 +5,19 @@ namespace impresja\impresja;
 
 class Request
 {
-    public function getPath()
+    public function getFullPath()
     {
         $path = $_SERVER['REQUEST_URI'] ?? '/';
         $position = strpos($path, '?');
-        if ($position === false) {
-            return $path;
+        if ($position !== false) {
+            $path = substr($path, 0, $position);
         }
-        return substr($path, 0, $position);
+        return explode("/", $path);
+    }
+
+    public function getPath()
+    {
+        return "/" . $this->getFullPath()['1'];
     }
 
     public function method()
