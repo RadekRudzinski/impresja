@@ -1,0 +1,15 @@
+{
+    "name": "impresja/impresja",
+    "authors": [
+        {
+            "name": "Radek Rudzinski",
+            "email": "biuro@brodex.pl"
+        }
+    ],
+    "require": {},
+    "autoload":{
+        "psr-4":{
+            "impresja\\impresja\\": "."
+        }
+    }
+}
