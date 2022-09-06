@@ -19,12 +19,13 @@ abstract class BaseField
 
     public function __toString()
     {
+        if (isset($this->type) && $this->type == 'hidden') {
+            return $this->renderInput();
+        }
         return sprintf(
-            '<div class="mb-3">
-                <label for="%s" class="form-label">%s</label>
-                %s
-                <div class="invalid-feedback">%s</div>
-            </div>',
+            '<label for="%s" class="form-label">%s</label>
+            %s
+             <div class="invalid-feedback">%s</div>',
             $this->attribute,
             $this->model->getLabel($this->attribute),
             $this->renderInput(),

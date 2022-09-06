@@ -5,19 +5,39 @@ namespace impresja\impresja;
 
 class Request
 {
+    private bool $pagination = false;
+    private int $pageNumber = 1;
+
     public function getFullPath()
     {
-        $path = $_SERVER['REQUEST_URI'] ?? '/';
+        $path = filter_var($_SERVER['REQUEST_URI'] ?? '/', FILTER_SANITIZE_SPECIAL_CHARS);
         $position = strpos($path, '?');
         if ($position !== false) {
             $path = substr($path, 0, $position);
         }
-        return explode("/", $path);
+        $pathArray = explode("/", trim($path, "\x2F"));
+        $potentialPage = is_numeric(end($pathArray));
+        if ($this->pagination && $potentialPage) {
+            $this->pageNumber = intval(end($pathArray));
+            unset($pathArray[count($pathArray) - 1]);
+        }
+        return $pathArray;
     }
 
-    public function getPath()
+    public function getPath(): string
     {
-        return "/" . $this->getFullPath()['1'];
+        return $this->getFullPath()['0'];
+    }
+
+    public function getPageNumber(): string
+    {
+        $this->getFullPath();
+        return $this->pageNumber;
+    }
+
+    public function setPagination()
+    {
+        $this->pagination = true;
     }
 
     public function method()
@@ -31,7 +51,7 @@ class Request
     }
     public function isPost()
     {
-        return $this->method() === 'post';
+        return $this->method() === 'post' && $_POST;
     }
 
     public function getBody()
@@ -43,9 +63,10 @@ class Request
             }
         }
         if ($this->method() === 'post') {
-            foreach ($_POST as $key => $value) {
-                $body[$key] = filter_input(INPUT_POST, $key, FILTER_SANITIZE_SPECIAL_CHARS);
-            }
+            // foreach ($_POST as $key => $value) {
+            //     $body[$key] = filter_input(INPUT_POST, $key, FILTER_SANITIZE_SPECIAL_CHARS);
+            // }
+            $body = $_POST;
         }
         return $body;
     }

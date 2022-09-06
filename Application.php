@@ -3,11 +3,18 @@
 namespace impresja\impresja;
 
 use impresja\impresja\db\Database;
-use impresja\impresja\db\DbModel;
+use impresja\impresja\models\Page404Model;
+use impresja\impresja\models\UserModel;
+use impresja\impresja\models\PageModel;
 
 class Application
 {
+    public const CONFIG_SITE = '1';
+    public const CONFIG_ADMIN = '2';
+    public const CONFIG_ALL = '3';
+
     public static string $ROOT_DIR;
+    public string $startTime;
     public string $userClass;
     public static Application $app;
     public Session $session;
@@ -17,21 +24,26 @@ class Application
     public Request $request;
     public Response $response;
     public Database $db;
+    public Config $config;
+    public ?PageModel $page;
     public ?UserModel $user;
 
-    public function __construct($rootPath, array $config)
+    public function __construct($rootPath)
     {
+        $this->startTime = microtime(true);
         self::$ROOT_DIR = $rootPath;
         self::$app = $this;
-        $this->userClass = $config['userClass'];
+        $dotenv = \Dotenv\Dotenv::createImmutable(self::$ROOT_DIR);
+        $dotenv->load();
+        $this->db = new Database();
+        $this->config = new Config();
+        $this->userClass = \impresja\models\User::class;
         $this->session = new Session();
         $this->request = new Request();
         $this->response = new Response();
+        $this->router = new Router($this->request, $this->response);
         $this->controller = new Controller();
         $this->view = new View();
-        $this->router = new Router($this->request, $this->response);
-        $this->db = new Database($config['db']);
-
         $primaryValue = $this->session->get('user');
         if ($primaryValue) {
             $primaryKey = $this->userClass::primaryKey();
@@ -43,10 +55,14 @@ class Application
 
     public function run()
     {
+        $this->config->loadDefaultConfig([self::CONFIG_ALL, self::CONFIG_SITE]);
+        $this->displayErrors($_ENV['DISPLAY_ERRORS']);
+        $this->page = PageModel::getPage($this->request->getPath());
+        $this->view->loadDefaultConfig();
         try {
-            echo $this->router->resolve();
+            echo $this->router->resolve($this->page);
         } catch (\Exception $e) {
-            $this->response->setStatusCode($e->getCode());
+            #$this->response->setStatusCode($e->getCode());
             echo $this->view->renderView('_error', ['exception' => $e]);
         }
     }
@@ -80,5 +96,19 @@ class Application
     public static function isGuest()
     {
         return !self::$app->user;
+    }
+
+    private function displayErrors($error)
+    {
+        ini_set('display_errors',  $error ?? 'off');
+        error_reporting(E_ALL);
+    }
+
+    public function set404()
+    {
+        $page404 = new Page404Model(filter_var($_SERVER['REQUEST_URI'], FILTER_SANITIZE_SPECIAL_CHARS), $_SERVER['HTTP_REFERER'] ?? NULL);
+        $page404->save();
+        $this->response->setStatusCode(404);
+        return $this->view->renderView("_404");
     }
 }

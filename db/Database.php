@@ -8,13 +8,15 @@ class Database
 {
     public \PDO $pdo;
 
-    public function __construct(array $config)
+    public function __construct()
     {
-        $dsn = $config['dsn'] ?? '';
-        $user = $config['user'] ?? '';
-        $password = $config['password'] ?? '';
+        $dsn = $_ENV['DB_DSN'] ?? '';
+        $user = $_ENV['DB_USER'] ?? '';
+        $password = $_ENV['DB_PASSWORD'] ?? '';
         $this->pdo = new \PDO($dsn, $user, $password);
+        $this->pdo->exec("set names utf8");
         $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $this->pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
     }
 
     public function applyMigrations()
@@ -32,12 +34,11 @@ class Database
             $instance = new $className();
             $this->log("Applying migration $className");
             $instance->up();
+            $this->saveMigration($migration);
             $this->log("Applied migration $className");
             $newMigrations[] = $migration;
         }
-        if (!empty($newMigrations)) {
-            $this->saveMigrations($newMigrations);
-        } else {
+        if (empty($newMigrations)) {
             $this->log("All migrations are applied");
         }
     }
@@ -57,10 +58,10 @@ class Database
         $statement->execute();
         return $statement->fetchAll(\PDO::FETCH_COLUMN);
     }
-    public function saveMigrations(array $migrations)
+
+    public function saveMigration(string $str)
     {
-        $str = implode(',', array_map(fn ($m) => "('$m')", $migrations));
-        $statement = $this->pdo->prepare("INSERT INTO imp_migrations (migration) VALUES $str");
+        $statement = $this->pdo->prepare("INSERT INTO imp_migrations (migration) VALUES ('$str')");
         $statement->execute();
     }
 
@@ -68,8 +69,22 @@ class Database
     {
         echo '[' . date('Y-m-d- H:i:s') . '] - ' . $message . PHP_EOL;
     }
+
     public function prepare($sql)
     {
         return $this->pdo->prepare($sql);
+    }
+    public function execute($sql)
+    {
+        $statement = $this->prepare($sql);
+        $statement->execute();
+        return $statement;
+    }
+
+    public function fetchQuery(string $query): array
+    {
+        $statement = $this->prepare($query);
+        $statement->execute();
+        return $statement->fetchAll();
     }
 }

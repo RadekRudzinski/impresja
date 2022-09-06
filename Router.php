@@ -2,19 +2,19 @@
 
 namespace impresja\impresja;
 
+use impresja\controllers\RedirectController;
+use impresja\impresja\models\PageModel;
+
 class Router
 {
     public Request $request;
     public Response $response;
-    protected array $routes = [];
-
 
     public function __construct(Request $request, Response $response)
     {
         $this->request = $request;
         $this->response = $response;
-    }
-
+    }/*
     public function get($path, $callback)
     {
         $this->routes['get'][$path] = $callback;
@@ -24,27 +24,37 @@ class Router
     {
         $this->routes['post'][$path] = $callback;
     }
+*/
 
-    public function resolve()
+    public function resolve(?PageModel $page)
     {
-        $callback = $this->routes[$this->request->method()][$this->request->getPath()] ?? "_404";
-        if ($callback === "_404") {
-            $this->response->setStatusCode(404);
+        if ($page === null) {
+            RedirectController::redirect();
+            return Application::$app->set404();
         }
+        /*
         if (is_string($callback)) {
             return Application::$app->view->renderView($callback);
         }
-        if (is_array($callback)) {
-            #$controller = Application::$app->controller;
-            $controller = new $callback[0]();
-            Application::$app->controller = $controller;
-            $controller->action = $callback[1];
-            $callback[0] = $controller;
-            $middlewares = $controller->getMiddlewares();
-            foreach ($middlewares as $middleware) {
-                $middleware->execute();
-            }
+        */
+        $controller = new $page->namespace();
+        Application::$app->controller = $controller;
+        $controller->action = $page->action;
+        $middlewares = $controller->getMiddlewares();
+        foreach ($middlewares as $middleware) {
+            $middleware->execute();
         }
-        return call_user_func($callback, $this->request, $this->response);
+        try {
+            if (method_exists($controller, $controller->action)) {
+                $return =  call_user_func([$controller, $controller->action], $this->request, $this->response);
+                Application::$app->session->save();
+                return $return;
+            }
+            throw new \Exception("This method dosn't exists in this controller", 404);
+        } catch (\Exception $e) {
+            if (is_numeric($e->getCode()))
+                $this->response->setStatusCode($e->getCode());
+            echo Application::$app->view->renderView('_error', ['exception' => $e]);
+        }
     }
 }

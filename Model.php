@@ -10,7 +10,9 @@ abstract class Model
     public const RULE_MAX = 'max';
     public const RULE_MATCH = 'match';
     public const RULE_UNIQUE = 'unique';
-
+    public const RULE_INT = 'integer';
+    public const RULE_FLOAT = 'float';
+    public const RULE_CURRENCY = 'currency';
     public array $errors = [];
 
     public function loadData($data)
@@ -33,6 +35,15 @@ abstract class Model
                 if (!is_string($ruleName)) {
                     $ruleName = $rule[0];
                 }
+                if ($ruleName === self::RULE_INT && !filter_var($value, FILTER_VALIDATE_INT)) {
+                    $this->addErrorForRule($attribute, self::RULE_INT);
+                }
+                if ($ruleName === self::RULE_FLOAT && !filter_var($value, FILTER_VALIDATE_FLOAT)) {
+                    $this->addErrorForRule($attribute, self::RULE_FLOAT);
+                }
+                if ($ruleName === self::RULE_CURRENCY && (!filter_var($value, FILTER_VALIDATE_FLOAT) && $value !== NULL && $value != 0)) {
+                    $this->addErrorForRule($attribute, self::RULE_CURRENCY);
+                }
                 if ($ruleName === self::RULE_REQUIRED && !$value) {
                     $this->addErrorForRule($attribute, self::RULE_REQUIRED);
                 }
@@ -52,7 +63,7 @@ abstract class Model
                     $className = $rule['class'];
                     $uniqueAttr = $rule['attribute'] ?? $attribute;
                     $tableName = $className::tableName();
-                    $statement = Application::$app->db->prepare("SELECT * FROM $tableName WHERE $uniqueAttr = :attr");
+                    $statement = Application::$app->db->prepare("SELECT * FROM $tableName WHERE $uniqueAttr = :attr AND `id` <> '$this->id'");
                     $statement->bindValue(":attr", $value);
                     $statement->execute();
                     $record = $statement->fetchObject();
@@ -89,6 +100,9 @@ abstract class Model
             self::RULE_MAX => 'Maksymalna długość to {max} znaków',
             self::RULE_MATCH => 'To pole musi mieć taką samą wartość jak {match}',
             self::RULE_UNIQUE => 'Wartość pola {field} już istnieje w bazie',
+            self::RULE_INT => 'Wprowadź prawidłową liczbę całkowitą',
+            self::RULE_FLOAT => 'Wprowadź prawidłową liczbę',
+            self::RULE_CURRENCY => 'Wprowadź prawidłową kwotę',
         ];
     }
 
@@ -110,5 +124,10 @@ abstract class Model
     public function getLabel($attribute)
     {
         return $this->labels()[$attribute] ?? $attribute;
+    }
+
+    public function getSelectData($attribute): array
+    {
+        return [];
     }
 }
